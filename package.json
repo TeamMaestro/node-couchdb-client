@@ -1,0 +1,32 @@
+{
+    "name": "@teammaestro/node-couchdb-client",
+    "version": "0.1.0",
+    "description": "This typescript module is designed to do handle the communication between NodeJS and CouchDB",
+    "keywords": [
+        "CouchDb",
+        "Request",
+        "Typescript"
+    ],
+    "main": "index.js",
+    "typings": "index.d.ts",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "watch": "tsc -w",
+        "prepublishOnly": "tsc",
+        "prepack": "tsc",
+        "postpack": "rm *.d.ts && rm *.js"
+    },
+    "author": "Maestro LLC",
+    "contributors": [
+        "John Pinkster <jpinkster>"
+    ],
+    "license": "Apache 2.0",
+    "dependencies": {
+        "request": "^2.83.0",
+        "request-promise": "^4.2.2"
+    },
+    "devDependencies": {
+        "@types/request": "^2.0.7",
+        "@types/request-promise": "^4.1.39"
+    }
+}

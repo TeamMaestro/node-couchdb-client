@@ -1,0 +1,5 @@
+node_modules
+.vscode
+*.js
+*.d.ts
+*.tgz
