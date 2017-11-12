@@ -33,6 +33,15 @@ export namespace CouchDbResponse {
         disk_format_version: number;
         // The number of bytes of live data inside the database file.
         data_size: number;
+        // Object
+        sizes: {
+            // The size of live data inside the database, in bytes.
+            active: number;
+            // – The uncompressed size of database contents in bytes.
+            external: number;
+            // – The size of the database file on disk in bytes. Views indexes are not included in the calculation.
+            file: number;
+        }
         // The length of the database file on disk. Views indexes are not included in the calculation.
         disk_size: number;
         // A count of the documents in the specified database.
@@ -83,6 +92,13 @@ export namespace CouchDbResponse {
     }
 
     export interface docs {
-        docs: document[]
+        docs: document[],
+    }
+
+    export interface find extends docs {
+        // Execution warnings
+        warning: string;
+        // Execution statistics
+        execution_stats: any;
     }
 }

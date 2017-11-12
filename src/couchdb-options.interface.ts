@@ -5,15 +5,12 @@ export namespace CouchDbOptions {
         port?: number;
         auth?: authOptions;
         logging?: boolean;
+        defaultDatabase?: string;
     }
 
     export interface authOptions {
-        user?: string;
         username?: string;
-        pass?: string;
         password?: string;
-        sendImmediately?: boolean;
-        bearer?: string | (() => string);
     }
 
     export interface requestOptions {
@@ -44,7 +41,7 @@ export namespace CouchDbOptions {
         use_index?: any;
     }
 
-    export interface query {
+    export interface findAllOptions {
         // Includes conflicts information in response. Ignored if include_docs isn’t true. Default is false.
         conflicts?: boolean;
         // Return the documents in descending by key order. Default is false.
@@ -81,5 +78,32 @@ export namespace CouchDbOptions {
         start_key_doc_id?: string;
         // Response includes an update_seq value indicating which sequence id of the underlying database the view reflects. Default is false.
         update_seq?: boolean;
+    }
+
+    export interface documentOptions {
+        // Includes attachments bodies in response. Default is false
+        attachments: boolean;
+        // Includes encoding information in attachment stubs if the particular attachment is compressed. Default is false.
+        att_encoding_info: boolean;
+        // Includes attachments only since specified revisions. Doesn’t includes attachments for specified revisions. Optional
+        atts_since: any[];
+        // Includes information about conflicts in document. Default is false
+        conflicts: boolean;
+        // Includes information about deleted conflicted revisions. Default is false
+        deleted_conflicts: boolean;
+        // Forces retrieving latest “leaf” revision, no matter what rev was requested. Default is false
+        latest: boolean;
+        // Includes last update sequence for the document. Default is false
+        local_seq: boolean;
+        // Acts same as specifying all conflicts, deleted_conflicts and revs_info query parameters. Default is false
+        meta: boolean;
+        // Retrieves documents of specified leaf revisions. Additionally, it accepts value as all to return all leaf revisions. Optional
+        open_revs: any[];
+        // Retrieves document of specified revision. Optional
+        rev: string;
+        // Includes list of all known document revisions. Default is false
+        revs: boolean;
+        // Includes detailed information for all known document revisions. Default is false
+        revs_info: boolean;
     }
 }
