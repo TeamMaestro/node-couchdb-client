@@ -199,6 +199,70 @@ couchDb.deleteDatabase('testDB')
 }
 ```
 
+### updateDatabaseSecurity({ dbName?: string, admins: any, members: any }) [PUT /{db}/_security](http://docs.couchdb.org/en/2.1.1/api/database/security.html#put--db-_security)
+Sets the security object for the given database. Use the member permissions to lock down this database to either a username or role.
+
+**Parameters:**
+* dbName (string | _optional_ | _default: couchDb.defaultDatabase)
+* admins:
+    * names (string[] | _optional_) - This is the list of usernames that have admin permissions
+    * roles (string[] | _optional_) - This is the list of roles that have admin permissions
+* members:
+    * names (string[] | _optional_) - This is the list of usernames that have member permissions
+    * roles (string[] | _optional_) - This is the list of roles that have member permissions
+
+**Request Example:**
+```javascript
+couchDb.updateDatabaseSecurity({
+    dbName: 'testDB',
+    admins: {
+        names: ['johnsmith']
+    },
+    members: {
+        names: ['johnsmith']
+    }
+})
+```
+
+**Response Example:**
+```
+{
+    "ok": true,
+
+}
+```
+
+## Users
+
+### createMemberUser({ username: string, password: string, roles?: string[]}) [POST /_users](https://stackoverflow.com/questions/3684749/creating-regular-users-in-couchdb)
+This will create a member user which would be used to help lock down a database
+
+**Parameters:**
+* username (string | _required_) - The users username
+* password (string | _required_) - The users password
+* roles (string[] | _optional_) - The users list of roles (These roles are made up by you .. used for Database security)
+
+**Request Example:**
+```javascript
+couchDb.createMemberUser({
+    username: 'johnsmith',
+    password: 'password',
+    roles: [
+        'reporter'
+    ]
+})
+```
+
+**Response Example:**
+```
+{
+    "ok": true,
+    "id": "org.couchdb.user:johnsmith",
+    "rev": "1-c7b59092b8e3e85eed24cce19e9350f7"
+}
+```
+
+
 ## Documents
 
 ### findDocuments({ dbName?: string, findOptions: any }) [POST /{db}/_find](http://docs.couchdb.org/en/latest/api/database/find.html#post--db-_find)

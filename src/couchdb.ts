@@ -221,6 +221,73 @@ export class CouchDb {
         })
     }
 
+    /**
+     * Update database security
+     * @param  {String} dbName
+     * @return {Promise}
+     */
+    updateDatabaseSecurity(options: {
+        dbName?: string,
+        admins: {
+            names?: string[],
+            roles?: string[]
+        },
+        members: {
+            names?: string[],
+            roles?: string[]
+        }
+    }) {
+        const dbName = options.dbName || this.defaultDatabase;
+        if(!dbName) {
+            return Promise.reject('No DB specified. Set defaultDatabase or specify one');
+        }
+        return this.request<CouchDbResponse.generic>({
+            path: `${encodeURIComponent(dbName)}/_security`,
+            method: 'PUT',
+            postData: {
+                admins: options.admins,
+                members: options.members
+            },
+            statusCodes: {
+                200: 'OK - Security updated',
+                401: 'Unauthorized - CouchDB Server Administrator privileges required'
+            }
+        })
+    }
+
+    /***** USERS *****/
+
+    /**
+     * Create a new user
+     * @param  {String} dbName
+     * @return {Promise}
+     */
+    createUser(options: {
+        username: string;
+        password: string;
+        roles?: string[]
+    }) {
+        return this.request<CouchDbResponse.create>({
+            path: `_users`,
+            method: 'POST',
+            postData: {
+                _id: `org.couchdb.user:${options.username}`,
+                name: options.username,
+                type: 'user',
+                roles: [...options.roles],
+                password: options.password
+            },
+            statusCodes: {
+                201: 'Created New User',
+                400: 'Bad Request - Invalid request',
+                401: 'Unauthorized - CouchDB Server Administrator privileges required',
+                500: 'Internal Server Error - Query execution error'
+            }
+        })
+    }
+
+
+
     /***** DOCUMENTS *****/
 
     /**
