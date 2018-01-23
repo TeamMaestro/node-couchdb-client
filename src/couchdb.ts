@@ -267,6 +267,7 @@ export class CouchDb {
         password: string;
         roles?: string[]
     }) {
+        options.roles = options.roles || [];
         return this.request<CouchDbResponse.Create>({
             path: `_users`,
             method: 'POST',
