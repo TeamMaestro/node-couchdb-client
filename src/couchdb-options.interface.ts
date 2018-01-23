@@ -1,32 +1,33 @@
+// tslint:disable-next-line:no-namespace
 export namespace CouchDbOptions {
 
-    export interface connection {
+    export interface Connection {
         host?: string;
         port?: number;
-        auth?: authOptions;
+        auth?: AuthOptions;
         logging?: boolean;
         defaultDatabase?: string;
     }
 
-    export interface authOptions {
+    export interface AuthOptions {
         username?: string;
         password?: string;
     }
 
-    export interface requestOptions {
+    export interface RequestOptions {
         path?: string;
         uri?: string;
         postData?: any;
         resolveWithFullResponse?: boolean;
-        auth?: authOptions;
+        auth?: AuthOptions;
         json?: boolean;
         statusCodes?: { [key: number]: string };
-        headers?: { [key: string]: any }
+        headers?: { [key: string]: any };
         body?: any;
-        method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'COPY' | 'HEAD'
+        method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'COPY' | 'HEAD';
     }
 
-    export interface findOptions {
+    export interface FindOptions {
         // JSON object describing criteria used to select documents. More information provided in the section on selector syntax.
         selector?: any;
         // Maximum number of results returned. Default is 25. Optional
@@ -41,7 +42,7 @@ export namespace CouchDbOptions {
         use_index?: any;
     }
 
-    export interface findAllOptions {
+    export interface FindAllOptions {
         // Includes conflicts information in response. Ignored if include_docs isn’t true. Default is false.
         conflicts?: boolean;
         // Return the documents in descending by key order. Default is false.
@@ -80,7 +81,7 @@ export namespace CouchDbOptions {
         update_seq?: boolean;
     }
 
-    export interface documentOptions {
+    export interface DocumentOptions {
         // Includes attachments bodies in response. Default is false
         attachments: boolean;
         // Includes encoding information in attachment stubs if the particular attachment is compressed. Default is false.

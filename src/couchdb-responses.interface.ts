@@ -1,28 +1,29 @@
+// tslint:disable-next-line:no-namespace
 export namespace CouchDbResponse {
     /**
      * Generic Base Respoinse
      */
 
-    export interface info {
+    export interface Info {
         couchdb: string;
         uuid: string;
         vendor: {
             name: string;
             version: string;
-        },
+        };
         version: string;
     }
 
-    export interface generic {
+    export interface Generic {
         ok: boolean;
     }
 
-    export interface create extends generic {
+    export interface Create extends Generic {
         _id: string;
         rev: string;
     }
 
-    export interface databaseInfo {
+    export interface DatabaseInfo {
         // The number of committed update.
         committed_update_seq: number;
         // Set to true if the database compaction routine is operating on this database.
@@ -41,7 +42,7 @@ export namespace CouchDbResponse {
             external: number;
             // – The size of the database file on disk in bytes. Views indexes are not included in the calculation.
             file: number;
-        }
+        };
         // The length of the database file on disk. Views indexes are not included in the calculation.
         disk_size: number;
         // A count of the documents in the specified database.
@@ -56,7 +57,7 @@ export namespace CouchDbResponse {
         update_seq: number;
     }
 
-    export interface document {
+    export interface Document {
         // Document ID
         _id: string;
         // Revision MVCC token
@@ -80,22 +81,22 @@ export namespace CouchDbResponse {
         [key: string]: any;
     }
 
-    export interface allDocuments {
+    export interface AllDocuments {
         // Offset where the document list started
         offset: number;
         // Array of view row objects. By default the information returned contains only the document ID and revision.
-        rows: document[];
+        rows: Document[];
         // Number of documents in the database/view. Note that this is not the number of rows returned in the actual query.
         total_rows: number;
         // Current update sequence for the database
         update_seq: number;
     }
 
-    export interface docs {
-        docs: document[],
+    export interface Docs {
+        docs: Document[];
     }
 
-    export interface find extends docs {
+    export interface Find extends Docs {
         // Execution warnings
         warning: string;
         // Execution statistics

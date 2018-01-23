@@ -12,12 +12,12 @@ export class CouchDb {
 
     public defaultDatabase: string;
 
-    constructor(options: CouchDbOptions.connection = {}) {
+    constructor(options: CouchDbOptions.Connection = {}) {
         this.host = options.host || 'http://127.0.0.1';
-        this.port = options.port = 5984;
+        this.port = options.port || 5984;
         this.auth = options.auth;
         this.logging = options.logging || false;
-        this.defaultDatabase = options.defaultDatabase
+        this.defaultDatabase = options.defaultDatabase;
     }
 
     /**
@@ -26,14 +26,14 @@ export class CouchDb {
      * @return {String}
      */
     private createQueryString(queryObj: any) {
-        return Object.keys(queryObj).length ? `?${querystring.stringify(queryObj)}` : ''
+        return Object.keys(queryObj).length ? `?${querystring.stringify(queryObj)}` : '';
     }
 
     /**
      * The default request options used with request
      * @return {Object}
      */
-    private get defaultRequestOptions(): CouchDbOptions.requestOptions {
+    private get defaultRequestOptions(): CouchDbOptions.RequestOptions {
         return {
             uri: `${this.host}:${this.port}`,
             auth: this.auth,
@@ -44,19 +44,19 @@ export class CouchDb {
                 'accept': 'application/json'
             },
             resolveWithFullResponse: true
-        }
+        };
     }
 
     /**
      * This method builds the request and returns the promise chain
      * @return {Promise<T>}
      */
-    private request<T>(options: CouchDbOptions.requestOptions = {}): Promise<T> {
+    private request<T>(options: CouchDbOptions.RequestOptions = {}): Promise<T> {
         const startTime = Date.now();
         const requestOptions = this.defaultRequestOptions;
         requestOptions.method = options.method || requestOptions.method;
         requestOptions.uri += `/${options.path}`;
-        requestOptions.body = options.postData
+        requestOptions.body = options.postData;
 
         if (options.headers && options.headers.length > 0) {
             requestOptions.headers = Object.assign({}, requestOptions.headers, options.headers);
@@ -65,6 +65,7 @@ export class CouchDb {
         return new Promise((resolve, reject) => {
             request(requestOptions as any).then(response => {
                 if (this.logging) {
+                    // tslint:disable-next-line:no-console
                     console.info({
                         statusCode: response.statusCode,
                         message: this.statusCode(options.statusCodes, response.statusCode),
@@ -81,7 +82,7 @@ export class CouchDb {
                     duration: Date.now() - startTime
                 });
             });
-        })
+        });
     }
 
     /**
@@ -89,7 +90,7 @@ export class CouchDb {
      * @return {String}
      */
     private statusCode(statusCodes: { [key: number]: string }, status: number): string {
-        const codes = Object.assign({}, http.STATUS_CODES, statusCodes)
+        const codes = Object.assign({}, http.STATUS_CODES, statusCodes);
         return codes[status] || 'unknown status';
     }
 
@@ -98,7 +99,7 @@ export class CouchDb {
      * @return {Promise}
      */
     getInfo() {
-        return this.request<CouchDbResponse.info>({
+        return this.request<CouchDbResponse.Info>({
             statusCodes: {
                 200: 'OK - Request completed successfully'
             }
@@ -128,17 +129,17 @@ export class CouchDb {
      */
     getDatabase(dbName?: string) {
         dbName = dbName || this.defaultDatabase;
-        if(!dbName) {
+        if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
-        return this.request<CouchDbResponse.databaseInfo>({
+        return this.request<CouchDbResponse.DatabaseInfo>({
             path: encodeURIComponent(dbName),
             statusCodes: {
                 200: 'OK - Request completed successfully',
                 401: 'Unauthorized - CouchDB Server Administrator privileges required',
                 404: 'Not Found – Requested database not found'
             }
-        })
+        });
     }
 
     /**
@@ -148,13 +149,13 @@ export class CouchDb {
      */
     createDatabase(dbName?: string) {
         dbName = dbName || this.defaultDatabase;
-        if(!dbName) {
+        if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
         if (!dbName.match('^[a-z][a-z0-9_$()+/-]*$')) {
-            return Promise.reject('Invalid DB Name: http://docs.couchdb.org/en/latest/api/database/common.html#put--db')
+            return Promise.reject('Invalid DB Name: http://docs.couchdb.org/en/latest/api/database/common.html#put--db');
         }
-        return this.request<CouchDbResponse.generic>({
+        return this.request<CouchDbResponse.Generic>({
             path: encodeURIComponent(dbName),
             method: 'PUT',
             statusCodes: {
@@ -163,7 +164,7 @@ export class CouchDb {
                 401: 'Unauthorized - CouchDB Server Administrator privileges required',
                 412: 'Precondition Failed - Database already exists'
             }
-        })
+        });
     }
 
     /**
@@ -173,7 +174,7 @@ export class CouchDb {
      */
     checkDatabaseExists(dbName?: string) {
         dbName = dbName || this.defaultDatabase;
-        if(!dbName) {
+        if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
         return new Promise<boolean>((resolve, reject) => {
@@ -198,7 +199,6 @@ export class CouchDb {
         });
     }
 
-
     /**
      * Delete database
      * @param  {String} dbName
@@ -206,10 +206,10 @@ export class CouchDb {
      */
     deleteDatabase(dbName?: string) {
         dbName = dbName || this.defaultDatabase;
-        if(!dbName) {
+        if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
-        return this.request<CouchDbResponse.generic>({
+        return this.request<CouchDbResponse.Generic>({
             path: encodeURIComponent(dbName),
             method: 'DELETE',
             statusCodes: {
@@ -218,7 +218,7 @@ export class CouchDb {
                 401: 'Unauthorized - CouchDB Server Administrator privileges required',
                 404: 'Not Found - Database doesn’t exist'
             }
-        })
+        });
     }
 
     /**
@@ -238,10 +238,10 @@ export class CouchDb {
         }
     }) {
         const dbName = options.dbName || this.defaultDatabase;
-        if(!dbName) {
+        if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
-        return this.request<CouchDbResponse.generic>({
+        return this.request<CouchDbResponse.Generic>({
             path: `${encodeURIComponent(dbName)}/_security`,
             method: 'PUT',
             postData: {
@@ -252,7 +252,7 @@ export class CouchDb {
                 200: 'OK - Security updated',
                 401: 'Unauthorized - CouchDB Server Administrator privileges required'
             }
-        })
+        });
     }
 
     /***** USERS *****/
@@ -267,7 +267,7 @@ export class CouchDb {
         password: string;
         roles?: string[]
     }) {
-        return this.request<CouchDbResponse.create>({
+        return this.request<CouchDbResponse.Create>({
             path: `_users`,
             method: 'POST',
             postData: {
@@ -283,10 +283,8 @@ export class CouchDb {
                 401: 'Unauthorized - CouchDB Server Administrator privileges required',
                 500: 'Internal Server Error - Query execution error'
             }
-        })
+        });
     }
-
-
 
     /***** DOCUMENTS *****/
 
@@ -298,13 +296,13 @@ export class CouchDb {
      */
     findDocuments(options: {
         dbName?: string,
-        findOptions: CouchDbOptions.findOptions
+        findOptions: CouchDbOptions.FindOptions
     }) {
         const dbName = options.dbName || this.defaultDatabase;
-        if(!dbName) {
+        if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
-        return this.request<CouchDbResponse.find>({
+        return this.request<CouchDbResponse.Find>({
             path: `${encodeURIComponent(dbName)}/_find`,
             method: 'POST',
             postData: options.findOptions,
@@ -314,7 +312,7 @@ export class CouchDb {
                 401: 'Unauthorized - Read permission required',
                 500: 'Internal Server Error - Query execution error'
             }
-        })
+        });
     }
 
     /**
@@ -325,20 +323,20 @@ export class CouchDb {
      */
     getDocuments(options: {
         dbName?: string,
-        options?: CouchDbOptions.findAllOptions
+        options?: CouchDbOptions.FindAllOptions
     }) {
         const dbName = options.dbName || this.defaultDatabase;
-        if(!dbName) {
+        if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
-        const queryStr = this.createQueryString(options.options)
-        return this.request<CouchDbResponse.allDocuments>({
+        const queryStr = this.createQueryString(options.options);
+        return this.request<CouchDbResponse.AllDocuments>({
             path: `${encodeURIComponent(dbName)}/_all_docs${queryStr}`,
             statusCodes: {
                 200: 'OK - Request completed successfully',
                 401: 'Unauthorized - Read privilege required',
             }
-        })
+        });
     }
 
     /**
@@ -351,14 +349,14 @@ export class CouchDb {
     getDocument(options: {
         docId: string,
         dbName?: string,
-        options?: CouchDbOptions.documentOptions,
+        options?: CouchDbOptions.DocumentOptions,
     }) {
         const dbName = options.dbName || this.defaultDatabase;
-        if(!dbName) {
+        if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
-        const queryStr = this.createQueryString(options.options)
-        return this.request<CouchDbResponse.document>({
+        const queryStr = this.createQueryString(options.options);
+        return this.request<CouchDbResponse.Document>({
             path: `${encodeURIComponent(dbName)}/${encodeURIComponent(options.docId)}${queryStr}`,
             statusCodes: {
                 200: 'OK - Request completed successfully',
@@ -367,7 +365,7 @@ export class CouchDb {
                 401: 'Unauthorized - Read privilege required',
                 404: 'Not Found - Document not found'
             }
-        })
+        });
     }
 
     /**
@@ -381,7 +379,7 @@ export class CouchDb {
         docId: string
     }) {
         const dbName = options.dbName || this.defaultDatabase;
-        if(!dbName) {
+        if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
         return new Promise<boolean>((resolve, reject) => {
@@ -420,11 +418,11 @@ export class CouchDb {
         dbName?: string
     }) {
         const dbName = options.dbName || this.defaultDatabase;
-        if(!dbName) {
+        if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
         if (options.docId && options.newDocId) {
-            return this.request<CouchDbResponse.create>({
+            return this.request<CouchDbResponse.Create>({
                 path: `${encodeURIComponent(dbName)}/${encodeURIComponent(options.docId)}`,
                 method: 'COPY',
                 headers: { Destination: options.newDocId },
@@ -436,7 +434,7 @@ export class CouchDb {
                     404: 'Not Found – Specified database or document ID doesn’t exists',
                     409: 'Conflict – Document with the specified ID already exists or specified revision is not latest for target document'
                 }
-            })
+            });
         }
         return Promise.reject('Invalid docId or newDocId');
     }
@@ -454,12 +452,12 @@ export class CouchDb {
         dbName?: string
     }) {
         const dbName = options.dbName || this.defaultDatabase;
-        if(!dbName) {
+        if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
         if (options.docId) {
             // create document by id (PUT)
-            return this.request<CouchDbResponse.create>({
+            return this.request<CouchDbResponse.Create>({
                 path: `${encodeURIComponent(dbName)}/${encodeURIComponent(options.docId)}`,
                 method: 'PUT',
                 postData: options.doc,
@@ -474,7 +472,7 @@ export class CouchDb {
                     404: 'Not Found – Specified database or document ID doesn’t exists',
                     409: 'Conflict – Document with the specified ID already exists or specified revision is not latest for target document'
                 }
-            })
+            });
         }
         // create document without explicit id (POST)
         return this.request({
@@ -489,7 +487,7 @@ export class CouchDb {
                 404: 'Not Found – Database doesn’t exists',
                 409: 'Conflict – A Conflicting Document with same ID already exists'
             }
-        })
+        });
     }
 
     /**
@@ -504,10 +502,10 @@ export class CouchDb {
         dbName?: string
     }) {
         const dbName = options.dbName || this.defaultDatabase;
-        if(!dbName) {
+        if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
-        return this.request<CouchDbResponse.create[]>({
+        return this.request<CouchDbResponse.Create[]>({
             path: `${encodeURIComponent(dbName)}/_bulk_docs`,
             method: 'POST',
             postData: {
@@ -519,7 +517,7 @@ export class CouchDb {
                 417: 'Expectation Failed – Occurs when all_or_nothing option set as true and at least one document was rejected by validation function',
                 500: 'Internal Server Error – Malformed data provided, while it’s still valid JSON'
             }
-        })
+        });
     }
 
     /**
@@ -535,10 +533,10 @@ export class CouchDb {
         rev: string
     }) {
         const dbName = options.dbName || this.defaultDatabase;
-        if(!dbName) {
+        if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
-        return this.request<CouchDbResponse.generic>({
+        return this.request<CouchDbResponse.Generic>({
             path: `${encodeURIComponent(dbName)}/${encodeURIComponent(options.docId)}?rev=${options.rev}`,
             method: 'DELETE',
             statusCodes: {
@@ -549,7 +547,7 @@ export class CouchDb {
                 404: 'Not Found - Specified database or document ID doesn\'t exist',
                 409: 'Conflict - Specified revision is not the latest for target document'
             }
-        })
+        });
     }
 
     /***** UTILS *****/
@@ -566,7 +564,7 @@ export class CouchDb {
                 200: 'OK - Request completed successfully',
                 403: 'Forbidden – Requested more UUIDs than is allowed to retrieve'
             }
-        })
+        });
     }
 
     /***** DESIGN DOCUMENTS *****/
@@ -581,13 +579,13 @@ export class CouchDb {
     getDesignDocument(options: {
         dbName?: string,
         docId: string,
-        options?: CouchDbOptions.documentOptions
+        options?: CouchDbOptions.DocumentOptions
     }) {
         const dbName = options.dbName || this.defaultDatabase;
-        if(!dbName) {
+        if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
-        const queryStr = this.createQueryString(options.options)
+        const queryStr = this.createQueryString(options.options);
         return this.request({
             path: `${encodeURIComponent(dbName)}/_design/${encodeURIComponent(options.docId)}${queryStr}`,
             statusCodes: {
@@ -597,7 +595,7 @@ export class CouchDb {
                 401: 'Unauthorized - Read privilege required',
                 404: 'Not Found - Document not found'
             }
-        })
+        });
     }
 
     /**
@@ -611,7 +609,7 @@ export class CouchDb {
         docId: string
     }) {
         const dbName = options.dbName || this.defaultDatabase;
-        if(!dbName) {
+        if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
         return this.request({
@@ -619,7 +617,7 @@ export class CouchDb {
             statusCodes: {
                 200: 'OK - Request completed successfully'
             }
-        })
+        });
     }
 
     /**
@@ -635,7 +633,7 @@ export class CouchDb {
         docId: string
     }) {
         const dbName = options.dbName || this.defaultDatabase;
-        if(!dbName) {
+        if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
         return this.request({
@@ -650,7 +648,7 @@ export class CouchDb {
                 404: 'Not Found – Specified database or document ID doesn’t exists',
                 409: 'Conflict – Document with the specified ID already exists or specified revision is not latest for target document'
             }
-        })
+        });
     }
 
     /**
@@ -666,7 +664,7 @@ export class CouchDb {
         rev: string
     }) {
         const dbName = options.dbName || this.defaultDatabase;
-        if(!dbName) {
+        if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
         return this.request({
@@ -680,7 +678,7 @@ export class CouchDb {
                 404: 'Not Found - Specified database or document ID doesn\'t exist',
                 409: 'Conflict - Specified revision is not the latest for target document'
             }
-        })
+        });
     }
 
     /**
@@ -695,19 +693,19 @@ export class CouchDb {
         dbName?: string,
         docId: string,
         viewName: string,
-        options?: CouchDbOptions.documentOptions
+        options?: CouchDbOptions.DocumentOptions
     }) {
         const dbName = options.dbName || this.defaultDatabase;
-        if(!dbName) {
+        if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
-        const queryStr = this.createQueryString(options.options)
+        const queryStr = this.createQueryString(options.options);
         return this.request({
             path: `${encodeURIComponent(dbName)}/_design/${encodeURIComponent(options.docId)}/_view/${encodeURIComponent(options.viewName)}${queryStr}`,
             statusCodes: {
                 200: 'OK - Request completed successfully'
             }
-        })
+        });
     }
 
     /***** INDEX *****/
@@ -719,7 +717,7 @@ export class CouchDb {
      */
     getIndexes(dbName?: string) {
         dbName = dbName || this.defaultDatabase;
-        if(!dbName) {
+        if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
         return this.request({
@@ -731,7 +729,7 @@ export class CouchDb {
                 401: 'Unauthorized - Read permission required',
                 500: 'Internal Server Error - Execution error'
             }
-        })
+        });
     }
 
     /**
@@ -746,7 +744,7 @@ export class CouchDb {
         name?: string
     }) {
         const dbName = options.dbName || this.defaultDatabase;
-        if(!dbName) {
+        if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
         return this.request({
@@ -762,7 +760,7 @@ export class CouchDb {
                 401: 'Unauthorized - Admin permission required',
                 500: 'Internal Server Error - Execution error'
             }
-        })
+        });
     }
 
     /**
@@ -778,7 +776,7 @@ export class CouchDb {
         indexName: string
     }) {
         const dbName = options.dbName || this.defaultDatabase;
-        if(!dbName) {
+        if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
         return this.request({
@@ -791,6 +789,6 @@ export class CouchDb {
                 404: 'Not Found - Index not found',
                 500: 'Internal Server Error - Execution error'
             }
-        })
+        });
     }
 }

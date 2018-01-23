@@ -234,7 +234,7 @@ couchDb.updateDatabaseSecurity({
 
 ## Users
 
-### createMemberUser({ username: string, password: string, roles?: string[]}) [POST /_users](https://stackoverflow.com/questions/3684749/creating-regular-users-in-couchdb)
+### createUser({ username: string, password: string, roles?: string[]}) [POST /_users](https://stackoverflow.com/questions/3684749/creating-regular-users-in-couchdb)
 This will create a member user which would be used to help lock down a database
 
 **Parameters:**
@@ -244,7 +244,7 @@ This will create a member user which would be used to help lock down a database
 
 **Request Example:**
 ```javascript
-couchDb.createMemberUser({
+couchDb.createUser({
     username: 'johnsmith',
     password: 'password',
     roles: [
