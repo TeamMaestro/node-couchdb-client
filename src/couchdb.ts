@@ -25,7 +25,7 @@ export class CouchDb {
      * several methods
      * @return {String}
      */
-    private createQueryString(queryObj: any) {
+    private createQueryString(queryObj: any = {}) {
         return Object.keys(queryObj).length ? `?${querystring.stringify(queryObj)}` : '';
     }
 
@@ -152,8 +152,8 @@ export class CouchDb {
         if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
-        if (!dbName.match('^[a-z][a-z0-9_$()+/-]*$')) {
-            return Promise.reject('Invalid DB Name: http://docs.couchdb.org/en/latest/api/database/common.html#put--db');
+        if (dbName !== '_users' && !dbName.match('^[a-z][a-z0-9_$()+/-]*$')) {
+            return Promise.reject(`Invalid DB Name '${dbName}': http://docs.couchdb.org/en/latest/api/database/common.html#put--db`);
         }
         return this.request<CouchDbResponse.Generic>({
             path: encodeURIComponent(dbName),
@@ -259,7 +259,11 @@ export class CouchDb {
 
     /**
      * Create a new user
-     * @param  {String} dbName
+     * @param {{
+     *         username: string;
+     *         password: string;
+     *         roles?: string[]
+     *     }} options
      * @return {Promise}
      */
     createUser(options: {
@@ -283,6 +287,61 @@ export class CouchDb {
                 400: 'Bad Request - Invalid request',
                 401: 'Unauthorized - CouchDB Server Administrator privileges required',
                 500: 'Internal Server Error - Query execution error'
+            }
+        });
+    }
+
+    /**
+     * Check if user exists
+     * @param {{
+     *         username: string;
+     *         password: string;
+     *         roles?: string[]
+     *     }} options
+     * @return {Promise}
+     */
+    checkUserExists(username: string) {
+        const dbName = '_users';
+        return new Promise<boolean>((resolve, reject) => {
+            this.request({
+                path: `${encodeURIComponent(dbName)}/org.couchdb.user:${username}`,
+                method: 'HEAD',
+                statusCodes: {
+                    200: 'OK - User exists',
+                    401: 'Unauthorized - Read privilege required',
+                    404: 'Not Found - User not found'
+                }
+            }).then(response => {
+                resolve(true);
+            }).catch(error => {
+                if (error && error.error && error.error.statusCode === 404) {
+                    resolve(false);
+                }
+                else {
+                    reject(error);
+                }
+            });
+        });
+    }
+
+    /**
+     * Get User
+     * @param  {String} dbName
+     * @param  {String} docId
+     * @param  {Object} [query]
+     * @return {Promise}
+     */
+    getUser(username: string) {
+        const dbName = '_users';
+        const docId = `org.couchdb.user:${username}`;
+        return this.request<CouchDbResponse.Document>({
+            path: `${encodeURIComponent(dbName)}/${encodeURIComponent(docId)}`,
+            statusCodes: {
+                200: 'OK - Request completed successfully',
+                304: 'Not Modified - Document wasn’t modified since specified revision',
+                400: 'Bad Request - The format of the request or revision was invalid',
+                401: 'Unauthorized - Read privilege required',
+                404: 'Not Found - Document not found'
             }
         });
     }
@@ -349,16 +408,14 @@ export class CouchDb {
      */
     getDocument(options: {
         docId: string,
-        dbName?: string,
-        options?: CouchDbOptions.DocumentOptions,
+        dbName?: string
     }) {
         const dbName = options.dbName || this.defaultDatabase;
         if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
-        const queryStr = this.createQueryString(options.options);
         return this.request<CouchDbResponse.Document>({
-            path: `${encodeURIComponent(dbName)}/${encodeURIComponent(options.docId)}${queryStr}`,
+            path: `${encodeURIComponent(dbName)}/${encodeURIComponent(options.docId)}`,
             statusCodes: {
                 200: 'OK - Request completed successfully',
                 304: 'Not Modified - Document wasn’t modified since specified revision',
@@ -492,13 +549,13 @@ export class CouchDb {
     }
 
     /**
-     * Create documents in Bulk
+     * Create/Update documents in Bulk
      * @param  {String} dbName
      * @param  {Array} docs
      * @param  {Object} [opts]
      * @return {Promise}
      */
-    createDocuments(options: {
+    upsertDocuments(options: {
         docs: any[],
         dbName?: string
     }) {
@@ -515,6 +572,45 @@ export class CouchDb {
             statusCodes: {
                 201: 'Created – Document(s) have been created or updated',
                 400: 'Bad Request – The request provided invalid JSON data',
+                417: 'Expectation Failed – Occurs when all_or_nothing option set as true and at least one document was rejected by validation function',
+                500: 'Internal Server Error – Malformed data provided, while it’s still valid JSON'
+            }
+        });
+    }
+
+    /**
+     *  Updating a document
+     *
+     * @param {{
+     *         dbName?: string;
+     *         docId: string;
+     *         rev: string;
+     *         updatedDoc: any;
+     *     }} options
+     * @returns {Promise}
+     * @memberof CouchDb
+     */
+    updateDocument(options: {
+        dbName?: string;
+        docId: string;
+        rev: string;
+        updatedDoc: any;
+    }) {
+        const dbName = options.dbName || this.defaultDatabase;
+        if (!dbName) {
+            return Promise.reject('No DB specified. Set defaultDatabase or specify one');
+        }
+        return this.request<CouchDbResponse.Create>({
+            path: `${encodeURIComponent(dbName)}/${encodeURIComponent(options.docId)}`,
+            method: 'PUT',
+            headers: {
+                'If-Match': options.rev
+            },
+            postData: options.updatedDoc,
+            statusCodes: {
+                201: 'Updated – Document(s) have been updated',
+                400: 'Bad Request – The request provided invalid JSON data',
+                409: 'Document Conflict',
                 417: 'Expectation Failed – Occurs when all_or_nothing option set as true and at least one document was rejected by validation function',
                 500: 'Internal Server Error – Malformed data provided, while it’s still valid JSON'
             }

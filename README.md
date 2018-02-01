@@ -262,6 +262,59 @@ couchDb.createUser({
 }
 ```
 
+### checkUserExists(username: string) [HEAD /_users/org.couchdb.user:{username}]()
+Returns a boolean for if the user exists or not.
+
+**Parameters:**
+* username (string) - The user's username you are checking on
+
+**Request Example:**
+```javascript
+couchDb.checkUserExists(username)
+```
+
+**Response:**
+This just returns a boolean if the database exists or not.
+
+**Response Example:**
+```
+true
+```
+
+### getUser(username : string) [GET /{db}/{docId}](http://docs.couchdb.org/en/latest/api/document/common.html#get--db-docid)
+Returns document by the specified docid from the specified db. Unless you request a specific revision, the latest revision of the document will always be returned.
+
+Parameters (_All optional_):
+* dbName (string | _default: couchDb.defaultDatabase)
+* docId (string | _required_) - The documents Id
+
+**Request Example:**
+```javascript
+couchDb.getDocument({
+    dbName: 'testDB',
+    docId: '4342-432432-432432-4324'
+})
+```
+
+**Response:**
+* _id (string) – Document ID
+* _rev (string) – Revision MVCC token
+* _deleted (boolean) – Deletion flag. Available if document was removed
+* _attachments (object) – Attachment’s stubs. Available if document has any attachments
+* _conflicts (array) – List of conflicted revisions. Available if requested with conflicts=true query * parameter
+* _deleted_conflicts (array) – List of deleted conflicted revisions. Available if requested with * deleted_conflicts=true query parameter
+* _local_seq (string) – Document’s update sequence in current database. Available if requested with * local_seq=true query parameter
+* _revs_info (array) – List of objects with information about local revisions and their status. * Available if requested with open_revs query parameter
+* _revisions (object) – List of local revision tokens without. Available if requested with revs=true query parameter
+
+**Response Example:**
+```json
+{
+    "id": "16e458537602f5ef2a710089dffd9453",
+    "rev": "1-967a00dff5e02add41819138abb3284d"
+}
+```
+
 
 ## Documents
 
@@ -406,71 +459,37 @@ couchDb.getDocuments({
 }
 ```
 
-### getDocument({ dbName?: string, docId: string, options?: any }) [GET /{db}/{docId}](http://docs.couchdb.org/en/latest/api/document/common.html#get--db-docid)
+### getDocument({ dbName?: string, docId: string }) [GET /{db}/{docId}](http://docs.couchdb.org/en/latest/api/document/common.html#get--db-docid)
 Returns document by the specified docid from the specified db. Unless you request a specific revision, the latest revision of the document will always be returned.
 
 Parameters (_All optional_):
 * dbName (string | _default: couchDb.defaultDatabase)
 * docId (string | _required_) - The documents Id
-* options:
-    * attachments (boolean | _default: false_) – Includes attachments bodies in response.
-    * att_encoding_info (boolean | _default: false_) – Includes encoding information in attachment stubs if the particular attachment is compressed.
-    * atts_since (array) – Includes attachments only since specified revisions. Doesn’t includes attachments for specified revisions
-    * conflicts (boolean | _default: false_) – Includes information about conflicts in document.
-    * deleted_conflicts (boolean | _default: false_) – Includes information about deleted conflicted revisions
-    * latest (boolean | _default: false_) – Forces retrieving latest “leaf” revision, no matter what rev was requested.
-    * local_seq (boolean | _default: false_) – Includes last update sequence for the document.
-    * meta (boolean | _default: false_) – Acts same as specifying all conflicts, deleted_conflicts and revs_info query parameters.
-    * open_revs (array) – Retrieves documents of specified leaf revisions. Additionally, it accepts value as all to return all leaf revisions.
-    * rev (string) – Retrieves document of specified revision.
-    * revs (boolean | _default: false_) – Includes list of all known document revisions.
-    * revs_info (boolean | _default: false_) – Includes detailed information for all known document revisions.
 
 **Request Example:**
 ```javascript
 couchDb.getDocument({
     dbName: 'testDB',
     docId: '4342-432432-432432-4324'
-    query: {
-        startKey: 'user'
-    }
 })
 ```
 
 **Response:**
-* offset (number) – Offset where the document list started
-* rows (array) – Array of view row objects. By default the information returned contains only the document ID and revision.
-* total_rows (number) – Number of documents in the database/view. Note that this is not the number of rows returned in the actual query.
-* update_seq (number) – Current update sequence for the database
+* _id (string) – Document ID
+* _rev (string) – Revision MVCC token
+* _deleted (boolean) – Deletion flag. Available if document was removed
+* _attachments (object) – Attachment’s stubs. Available if document has any attachments
+* _conflicts (array) – List of conflicted revisions. Available if requested with conflicts=true query * parameter
+* _deleted_conflicts (array) – List of deleted conflicted revisions. Available if requested with * deleted_conflicts=true query parameter
+* _local_seq (string) – Document’s update sequence in current database. Available if requested with * local_seq=true query parameter
+* _revs_info (array) – List of objects with information about local revisions and their status. * Available if requested with open_revs query parameter
+* _revisions (object) – List of local revision tokens without. Available if requested with revs=true query parameter
 
 **Response Example:**
 ```json
 {
-    "offset": 0,
-    "rows": [
-        {
-            "id": "16e458537602f5ef2a710089dffd9453",
-            "key": "16e458537602f5ef2a710089dffd9453",
-            "value": {
-                "rev": "1-967a00dff5e02add41819138abb3284d"
-            }
-        },
-        {
-            "id": "a4c51cdfa2069f3e905c431114001aff",
-            "key": "a4c51cdfa2069f3e905c431114001aff",
-            "value": {
-                "rev": "1-967a00dff5e02add41819138abb3284d"
-            }
-        },
-        {
-            "id": "a4c51cdfa2069f3e905c4311140034aa",
-            "key": "a4c51cdfa2069f3e905c4311140034aa",
-            "value": {
-                "rev": "5-6182c9c954200ab5e3c6bd5e76a1549f"
-            }
-        }
-    ],
-    "total_rows": 3
+    "id": "16e458537602f5ef2a710089dffd9453",
+    "rev": "1-967a00dff5e02add41819138abb3284d"
 }
 ```
 
@@ -563,7 +582,7 @@ couchDb.createDocument({
 ```
 
 
-### createDocuments({ dbName?: string, docs: any[] }) [POST /{db}/_bulk_docs](http://docs.couchdb.org/en/latest/api/database/bulk-api.html#post--db-_bulk_docs)
+### upsertDocuments({ dbName?: string, docs: any[] }) [POST /{db}/_bulk_docs](http://docs.couchdb.org/en/latest/api/database/bulk-api.html#post--db-_bulk_docs)
 The bulk document API allows you to create multiple documents at the same time within a single request. The basic operation is similar to creating single document, except that you batch the document structure and information. When creating new documents the document ID (`_id`) is optional.
 
 **Parameters:**
@@ -572,12 +591,14 @@ The bulk document API allows you to create multiple documents at the same time w
 
 **Request Example:**
 ```javascript
-couchDb.createDocuments({
+couchDb.upsertDocuments({
     dbName: 'testDB',
     docs: [{
         firstName: 'John',
         lastName: 'Doe'
     }, {
+        _id: '3f32022a25e9b2b81b67a766b9004517',
+        _rev: '2-d538c7aaebdf4eb144b5d0070d3165ba',
         firstName: 'Jan',
         lastName: 'Doe'
     }]
