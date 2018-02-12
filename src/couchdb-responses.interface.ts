@@ -57,25 +57,38 @@ export namespace CouchDbResponse {
         update_seq: number;
     }
 
+    export interface ParentDocument {
+        // Document ID
+        id: string;
+        // Document Key
+        key: string;
+        value: {
+            // Document Revision
+            rev: string;
+        };
+        // The Document (if included)
+        doc?: Document;
+    }
+
     export interface Document {
         // Document ID
         _id: string;
         // Revision MVCC token
-        _rev: string;
+        _rev?: string;
         // Deletion flag. Available if document was removed
-        _deleted: boolean;
+        _deleted?: boolean;
         // Attachment’s stubs. Available if document has any attachments
-        _attachments: object;
+        _attachments?: object;
         // List of conflicted revisions. Available if requested with conflicts=true query parameter
-        _conflicts: any[];
+        _conflicts?: any[];
         // List of deleted conflicted revisions. Available if requested with deleted_conflicts=true query parameter
-        _deleted_conflicts: any[];
+        _deleted_conflicts?: any[];
         // Document’s update sequence in current database. Available if requested with local_seq=true query parameter
-        _local_seq: string;
+        _local_seq?: string;
         // List of objects with information about local revisions and their status. Available if requested with open_revs query parameter
-        _revs_info: any[];
+        _revs_info?: any[];
         // List of local revision tokens without. Available if requested with revs=true query parameter
-        _revisions: object;
+        _revisions?: object;
 
         // Any custom keys
         [key: string]: any;
@@ -85,7 +98,7 @@ export namespace CouchDbResponse {
         // Offset where the document list started
         offset: number;
         // Array of view row objects. By default the information returned contains only the document ID and revision.
-        rows: Document[];
+        rows: ParentDocument[];
         // Number of documents in the database/view. Note that this is not the number of rows returned in the actual query.
         total_rows: number;
         // Current update sequence for the database
