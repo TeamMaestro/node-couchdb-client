@@ -45,3 +45,7 @@ Desktop.ini
 
 
 /src
+tsconfig.json
+tslint.json
+*.tar
+*.tgz
