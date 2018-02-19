@@ -75,12 +75,7 @@ export class CouchDb {
                 }
                 resolve(response.body);
             }).catch(error => {
-                reject({
-                    error,
-                    status: error.statusCode || 500,
-                    message: this.statusCode(options.statusCodes, error.statusCode),
-                    duration: Date.now() - startTime
-                });
+                throw error;
             });
         });
     }
