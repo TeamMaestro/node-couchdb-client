@@ -51,7 +51,7 @@ export class CouchDb {
      * This method builds the request and returns the promise chain
      * @return {Promise<T>}
      */
-    private request<T>(options: CouchDbOptions.RequestOptions = {}): Promise<T> {
+    private request<T>(options: CouchDbOptions.RequestOptions = {}): PromiseLike<T> {
         const startTime = Date.now();
         const requestOptions = this.defaultRequestOptions;
         requestOptions.method = options.method || requestOptions.method;
@@ -62,21 +62,17 @@ export class CouchDb {
             requestOptions.headers = Object.assign({}, requestOptions.headers, options.headers);
         }
 
-        return new Promise((resolve, reject) => {
-            request(requestOptions as any).then(response => {
-                if (this.logging) {
-                    // tslint:disable-next-line:no-console
-                    console.info({
-                        statusCode: response.statusCode,
-                        message: this.statusCode(options.statusCodes, response.statusCode),
-                        body: response.body,
-                        duration: Date.now() - startTime
-                    });
-                }
-                resolve(response.body);
-            }).catch(error => {
-                throw error;
-            });
+        return request(requestOptions as any).then(response => {
+            if (this.logging) {
+                // tslint:disable-next-line:no-console
+                console.info({
+                statusCode: response.statusCode,
+                    message: this.statusCode(options.statusCodes, response.statusCode),
+                    body: response.body,
+                    duration: Date.now() - startTime
+                });
+            }
+            return response.body;
         });
     }
 
@@ -170,27 +166,23 @@ export class CouchDb {
     checkDatabaseExists(dbName?: string) {
         dbName = dbName || this.defaultDatabase;
         if (!dbName) {
-            return Promise.reject('No DB specified. Set defaultDatabase or specify one');
+            throw new Error('No DB specified. Set defaultDatabase or specify one');
         }
-        return new Promise<boolean>((resolve, reject) => {
-            this.request({
-                path: encodeURIComponent(dbName),
-                method: 'HEAD',
-                statusCodes: {
-                    200: 'OK - Database exists',
-                    401: 'Unauthorized - CouchDB Server Administrator privileges required',
-                    404: 'Not Found – Requested database not found'
-                }
-            }).then(response => {
-                resolve(true);
-            }).catch(error => {
-                if (error && error.error && error.error.statusCode === 404) {
-                    resolve(false);
-                }
-                else {
-                    reject(error);
-                }
-            });
+        return this.request({
+            path: encodeURIComponent(dbName),
+            method: 'HEAD',
+            statusCodes: {
+                200: 'OK - Database exists',
+                401: 'Unauthorized - CouchDB Server Administrator privileges required',
+                404: 'Not Found – Requested database not found'
+            }
+        }).then(response => {
+            return true;
+        }, error => {
+            if (error && error.statusCode === 404) {
+                return false;
+            }
+            throw error;
         });
     }
 
@@ -297,25 +289,21 @@ export class CouchDb {
      */
     checkUserExists(username: string) {
         const dbName = '_users';
-        return new Promise<boolean>((resolve, reject) => {
-            this.request({
-                path: `${encodeURIComponent(dbName)}/org.couchdb.user:${username}`,
-                method: 'HEAD',
-                statusCodes: {
-                    200: 'OK - User exists',
-                    401: 'Unauthorized - Read privilege required',
-                    404: 'Not Found - User not found'
-                }
-            }).then(response => {
-                resolve(true);
-            }).catch(error => {
-                if (error && error.error && error.error.statusCode === 404) {
-                    resolve(false);
-                }
-                else {
-                    reject(error);
-                }
-            });
+        return  this.request({
+            path: `${encodeURIComponent(dbName)}/org.couchdb.user:${username}`,
+            method: 'HEAD',
+            statusCodes: {
+                200: 'OK - User exists',
+                401: 'Unauthorized - Read privilege required',
+                404: 'Not Found - User not found'
+            }
+        }).then(response => {
+            return true;
+        }, error => {
+            if (error && error.statusCode === 404) {
+                return false;
+            }
+            throw error;
         });
     }
 
@@ -435,26 +423,22 @@ export class CouchDb {
         if (!dbName) {
             return Promise.reject('No DB specified. Set defaultDatabase or specify one');
         }
-        return new Promise<boolean>((resolve, reject) => {
-            this.request({
-                path: `${encodeURIComponent(dbName)}/${encodeURIComponent(options.docId)}`,
-                method: 'HEAD',
-                statusCodes: {
-                    200: 'OK - Document exists',
-                    304: 'Not Modified - Document wasn’t modified since specified revision',
-                    401: 'Unauthorized - Read privilege required',
-                    404: 'Not Found - Document not found'
-                }
-            }).then(response => {
-                resolve(true);
-            }).catch(error => {
-                if (error && error.error && error.error.statusCode === 404) {
-                    resolve(false);
-                }
-                else {
-                    reject(error);
-                }
-            });
+        return this.request({
+            path: `${encodeURIComponent(dbName)}/${encodeURIComponent(options.docId)}`,
+            method: 'HEAD',
+            statusCodes: {
+                200: 'OK - Document exists',
+                304: 'Not Modified - Document wasn’t modified since specified revision',
+                401: 'Unauthorized - Read privilege required',
+                404: 'Not Found - Document not found'
+            }
+        }).then(response => {
+            return true;
+        }, error => {
+            if (error && error.statusCode === 404) {
+                return false;
+            }
+            throw error;
         });
     }
 
