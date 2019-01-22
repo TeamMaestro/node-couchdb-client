@@ -23,6 +23,11 @@ export namespace CouchDbResponse {
         rev: string;
     }
 
+    export interface Update extends Generic {
+        id: string;
+        rev:string;
+    }
+
     export interface DatabaseInfo {
         // The number of committed update.
         committed_update_seq: number;
