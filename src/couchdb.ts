@@ -329,6 +329,44 @@ export class CouchDb {
         });
     }
 
+    /**
+    * Update a user's password
+    * @param {{
+    *         username: string;
+    *         password: string;
+    *     }} options
+    * @return {Promise}
+    */
+    async updateUserPassword(options: {
+        username: string;
+        password: string;
+    }) {
+        const user = await this.getUser(options.username);
+        const dbName = '_users';
+
+        return this.request<CouchDbResponse.Update>({
+            path: `${encodeURIComponent(dbName)}/${user._id}`,
+            method: 'PUT',
+            postData: {
+                _rev: user._rev,
+                _id: user._id,
+                name: user.name,
+                type: 'user',
+                roles: [...user.roles],
+                password: options.password
+            },
+            statusCodes: {
+                200: 'OK - User exists',
+                401: 'Unauthorized - Read privilege required',
+                404: 'Not Found - User not found',
+                409: 'Document update conflict',
+                500: 'Internal Server Error - Query execution error'
+            }
+        });
+    }
+
+
+
     /***** DOCUMENTS *****/
 
     /**
