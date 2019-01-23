@@ -1,6 +1,6 @@
 {
-    "name": "@teammaestro/node-couchdb-client",
-    "version": "0.6.0",
+    "name": "@teamhive/node-couchdb-client",
+    "version": "0.1.0",
     "description": "This typescript module is designed to do handle the communication between NodeJS and CouchDB",
     "keywords": [
         "CouchDb",
