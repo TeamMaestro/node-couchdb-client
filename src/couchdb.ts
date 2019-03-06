@@ -1,8 +1,8 @@
-import * as request from 'request-promise';
+import { CouchDbOptions, CouchDbResponse } from './index';
 import * as http from 'http';
 import * as querystring from 'query-string';
-import { CouchDbOptions, CouchDbResponse } from './index';
 import { AuthOptions } from 'request';
+import * as request from 'request-promise';
 
 export class CouchDb {
     private host: string;
@@ -109,6 +109,31 @@ export class CouchDb {
             statusCodes: {
                 200: 'OK - Request completed successfully',
                 401: 'Unauthorized - CouchDB Server Administrator privileges required',
+            }
+        });
+    }
+
+    /**
+     * Get the list of specified databases info.
+     * @param {{
+     *         keys: string[];
+     *     }} options
+     * @return {Promise}
+     */
+    findDatabaseInfo(options: {
+        keys: string[]
+        }) {
+        if (!options || !options.keys || options.keys.length === 0) {
+            return Promise.reject('No DB specified.');
+        }
+        return this.request<CouchDbResponse.DatabaseInfo[]>({
+            path: '_dbs_info',
+            method: 'POST',
+            postData: options,
+            statusCodes: {
+                200: 'OK - Request completed successfully',
+                401: 'Unauthorized - CouchDB Server Administrator privileges required',
+                404: 'Not Found – Requested database/s not found'
             }
         });
     }

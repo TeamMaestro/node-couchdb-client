@@ -105,6 +105,60 @@ couchDb.getDatabases()
 ]
 ```
 
+### findDatabaseInfo() [POST \_dbs\_info](http://docs.couchdb.org/en/latest/api/server/common.html#_dbs_info)
+This endpoint gets information about the specified databases.
+
+**Request Example:**
+```javascript
+couchDb.getDatabases({keys:['key1','key2']})
+```
+
+**Response Example:**
+```
+[
+  {
+    "db_name": "test1",
+    "update_seq": "37-g1AAAABXeJ",
+    "sizes": {
+        "file": 172428,
+        "external": 3427,
+        "active": 13135
+    },
+    "purge_seq": 0,
+    "other": {
+        "data_size": 3427
+    },
+    "doc_del_count": 5,
+    "doc_count": 23,
+    "disk_size": 172428,
+    "disk_format_version": 6,
+    "data_size": 13135,
+    "compact_running": false,
+    "instance_start_time": "0"
+  },
+  {
+    "db_name": "test2",
+    "update_seq": "37-g1AAAABXeJ",
+    "sizes": {
+        "file": 172428,
+        "external": 3427,
+        "active": 13135
+    },
+    "purge_seq": 0,
+    "other": {
+        "data_size": 3427
+    },
+    "doc_del_count": 5,
+    "doc_count": 23,
+    "disk_size": 172428,
+    "disk_format_version": 6,
+    "data_size": 13135,
+    "compact_running": false,
+    "instance_start_time": "0"
+  }
+]
+```
+
 ### getDatabase(dbName?: string) [GET /{db}](http://docs.couchdb.org/en/latest/api/database/common.html#get--db)
 Gets information about the specified database.
 
