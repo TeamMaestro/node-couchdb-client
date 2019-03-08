@@ -135,6 +135,7 @@ export class CouchDb {
 
     /**
      * Get database revision limit
+     * @param  {String} dbName
      * @return {Promise}
      */
     getDatabaseRevisionLimit(dbName: string) {
