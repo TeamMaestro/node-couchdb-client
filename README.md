@@ -140,8 +140,24 @@ couchDb.getDatabase('testDB')
 }
 ```
 
-### createDatabase(dbName?: string) [PUT /{db}](http://docs.couchdb.org/en/latest/api/database/common.html#put--db)
-Creates a new database. The database name {db} must be composed by following next rules:
+### getDatabaseRevisionLimit(dbName?: string) [GET /{db}/_revs_limit](http://docs.couchdb.org/en/latest/api/database/misc.html#db-revs-limit)
+Gets the revision limit for the specified database.
+
+**Parameters:**
+* dbName (string)
+
+**Request Example:**
+```javascript
+couchDb.getDatabaseRevisionLimit('testDB')
+```
+
+**Response Example:**
+```
+2
+```
+
+### createDatabase(dbName?: string, options?: { revisionLimit: number; }) [PUT /{db}](http://docs.couchdb.org/en/latest/api/database/common.html#put--db)
+Creates a new database. If a revisionLimit is passed to the options object it will also set the revision limit for that database. The database name {db} must be composed by following next rules:
 * Name must begin with a lowercase letter (a-z)
 * Lowercase characters (a-z)
 * Digits (0-9)
@@ -149,10 +165,12 @@ Creates a new database. The database name {db} must be composed by following nex
 
 **Parameters:**
 * dbName (string | _optional_ | _default: couchDb.defaultDatabase)
+* options (object | _optional_)
+    * revisionLimit (number)
 
 **Request Example:**
 ```javascript
-couchDb.createDatabase('testDB')
+couchDb.createDatabase('testDB', { revisionLimit: 2 })
 ```
 
 **Response Example:**
@@ -179,6 +197,45 @@ This just returns a boolean if the database exists or not.
 **Response Example:**
 ```
 true
+```
+
+### compactDatabase(dbName: string) [POST /{db}/_compact](http://docs.couchdb.org/en/latest/api/database/compact.html)
+Request compaction of the specified database. Compaction compresses the disk database file by writing a new optimized version of the database and removing any old revisions, up to the database specific revision limit.
+
+
+**Parameters:**
+* dbName (string)
+
+**Request Example:**
+```javascript
+couchDb.compactDatabase('testDB')
+```
+
+**Response Example:**
+```
+{
+    "ok": true
+}
+```
+
+### setDatabaseRevisionLimit(dbName: string, revisionLimit: number) [PUT /{db}/_revs_limit](http://docs.couchdb.org/en/latest/api/database/misc.html#db-revs-limit)
+Set the revision limit on the specified database.
+
+
+**Parameters:**
+* dbName (string)
+* revisionLimit (number)
+
+**Request Example:**
+```javascript
+couchDb.setDatabaseRevisionLimit('testDB', 2)
+```
+
+**Response Example:**
+```
+{
+    "ok": true
+}
 ```
 
 ### deleteDatabase(dbName?: string) [DELETE /{db}](http://docs.couchdb.org/en/latest/api/database/common.html#delete--db)

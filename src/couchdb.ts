@@ -134,26 +134,16 @@ export class CouchDb {
     }
 
     /**
-     * Create database
+     * Get database revision limit
      * @param  {String} dbName
      * @return {Promise}
      */
-    createDatabase(dbName?: string) {
-        dbName = dbName || this.defaultDatabase;
-        if (!dbName) {
-            return Promise.reject('No DB specified. Set defaultDatabase or specify one');
-        }
-        if (dbName !== '_users' && !dbName.match('^[a-z][a-z0-9_$()+/-]*$')) {
-            return Promise.reject(`Invalid DB Name '${dbName}': http://docs.couchdb.org/en/latest/api/database/common.html#put--db`);
-        }
-        return this.request<CouchDbResponse.Generic>({
-            path: encodeURIComponent(dbName),
-            method: 'PUT',
+    getDatabaseRevisionLimit(dbName: string) {
+        return this.request({
+            path: `${encodeURIComponent(dbName)}/${encodeURIComponent('_revs_limit')}`,
+            method: 'GET',
             statusCodes: {
-                201: 'Created - Database created successfully',
-                400: 'Bad Request - Invalid database name',
-                401: 'Unauthorized - CouchDB Server Administrator privileges required',
-                412: 'Precondition Failed - Database already exists'
+                200: 'OK - Request completed successfully'
             }
         });
     }
@@ -183,6 +173,76 @@ export class CouchDb {
                 return false;
             }
             throw error;
+        });
+    }
+
+    /**
+     * Create database
+     * @param  {String} dbName
+     * @return {Promise}
+     */
+    async createDatabase(dbName?: string, options?: {
+        revisionLimit: number
+    }) {
+        dbName = dbName || this.defaultDatabase;
+        if (!dbName) {
+            return Promise.reject('No DB specified. Set defaultDatabase or specify one');
+        }
+        if (dbName !== '_users' && !dbName.match('^[a-z][a-z0-9_$()+/-]*$')) {
+            return Promise.reject(`Invalid DB Name '${dbName}': http://docs.couchdb.org/en/latest/api/database/common.html#put--db`);
+        }
+
+        const response = this.request<CouchDbResponse.Generic>({
+            path: encodeURIComponent(dbName),
+            method: 'PUT',
+            statusCodes: {
+                201: 'Created - Database created successfully',
+                400: 'Bad Request - Invalid database name',
+                401: 'Unauthorized - CouchDB Server Administrator privileges required',
+                412: 'Precondition Failed - Database already exists'
+            }
+        });
+
+        if (options && options.revisionLimit) {
+            await this.setDatabaseRevisionLimit(dbName, options.revisionLimit);
+        }
+        return response;
+    }
+
+    /**
+     * Compact database
+     * @param  {String} dbName
+     * @return {Promise}
+     */
+    compactDatabase(dbName: string) {
+        return this.request<CouchDbResponse.Generic>({
+            path: `${encodeURIComponent(dbName)}/${encodeURIComponent('_compact')}`,
+            method: 'POST',
+            postData: {},
+            statusCodes: {
+                202: 'Accepted - Compaction request has been accepted',
+                400: 'Bad Request - Invalid database name',
+                401: 'Unauthorized - CouchDB Server Administrator privileges required',
+                415: 'Unsupported Media Type - Bad Content-Type value'
+            }
+        })
+    }
+
+    /**
+     * Set database revision limit
+     * @param  {String} dbName
+     * @param {Number} revisionLimit
+     * @return {Promise}
+     */
+    setDatabaseRevisionLimit(dbName: string, revisionLimit: number) {
+        return this.request<CouchDbResponse.Generic>({
+            path: `${encodeURIComponent(dbName)}/${encodeURIComponent('_revs_limit')}`,
+            method: 'PUT',
+            postData: revisionLimit,
+            statusCodes: {
+                200: 'OK - Request completed successfully',
+                400: 'Bad Request - Invalid JSON data'
+            }
         });
     }
 
