@@ -1,8 +1,8 @@
-import * as request from 'request-promise';
 import * as http from 'http';
 import * as querystring from 'query-string';
-import { CouchDbOptions, CouchDbResponse } from './index';
 import { AuthOptions } from 'request';
+import * as request from 'request-promise';
+import { CouchDbOptions, CouchDbResponse } from './index';
 
 export class CouchDb {
     private host: string;
@@ -192,21 +192,24 @@ export class CouchDb {
             return Promise.reject(`Invalid DB Name '${dbName}': http://docs.couchdb.org/en/latest/api/database/common.html#put--db`);
         }
 
-        const response = this.request<CouchDbResponse.Generic>({
-            path: encodeURIComponent(dbName),
-            method: 'PUT',
-            statusCodes: {
-                201: 'Created - Database created successfully',
-                400: 'Bad Request - Invalid database name',
-                401: 'Unauthorized - CouchDB Server Administrator privileges required',
-                412: 'Precondition Failed - Database already exists'
-            }
-        });
+        return this.request<CouchDbResponse.Generic>({
+                path: encodeURIComponent(dbName),
+                method: 'PUT',
+                statusCodes: {
+                    201: 'Created - Database created successfully',
+                    400: 'Bad Request - Invalid database name',
+                    401: 'Unauthorized - CouchDB Server Administrator privileges required',
+                    412: 'Precondition Failed - Database already exists'
+                }
+            }).then(async response => {
+                if (options && options.revisionLimit) {
+                    await this.setDatabaseRevisionLimit(dbName, options.revisionLimit);
+                }
 
-        if (options && options.revisionLimit) {
-            await this.setDatabaseRevisionLimit(dbName, options.revisionLimit);
-        }
-        return response;
+                return response;
+            }, error => {
+                throw error;
+            });
     }
 
     /**
@@ -216,7 +219,7 @@ export class CouchDb {
      */
     compactDatabase(dbName: string) {
         return this.request<CouchDbResponse.Generic>({
-            path: `${encodeURIComponent(dbName)}/${encodeURIComponent('_compact')}`,
+            path: `${encodeURIComponent(dbName)}/_compact`,
             method: 'POST',
             postData: {},
             statusCodes: {
@@ -236,7 +239,7 @@ export class CouchDb {
      */
     setDatabaseRevisionLimit(dbName: string, revisionLimit: number) {
         return this.request<CouchDbResponse.Generic>({
-            path: `${encodeURIComponent(dbName)}/${encodeURIComponent('_revs_limit')}`,
+            path: `${encodeURIComponent(dbName)}/_revs_limit`,
             method: 'PUT',
             postData: revisionLimit,
             statusCodes: {
