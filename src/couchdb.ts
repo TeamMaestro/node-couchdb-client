@@ -1,8 +1,8 @@
-import { CouchDbOptions, CouchDbResponse } from './index';
 import * as http from 'http';
 import * as querystring from 'query-string';
 import { AuthOptions } from 'request';
 import * as request from 'request-promise';
+import { CouchDbOptions, CouchDbResponse } from './index';
 
 export class CouchDb {
     private host: string;
@@ -116,20 +116,21 @@ export class CouchDb {
     /**
      * Get the list of specified databases info.
      * @param {{
-     *         keys: string[];
+     *         dbNames: string[];
      *     }} options
      * @return {Promise}
      */
     findDatabaseInfo(options: {
-        keys: string[]
+        dbNames: string[]
         }) {
-        if (!options || !options.keys || options.keys.length === 0) {
+        if (!options || !options.dbNames || options.dbNames.length === 0) {
             return Promise.reject('No DB specified.');
         }
+
         return this.request<CouchDbResponse.DatabaseInfo[]>({
             path: '_dbs_info',
             method: 'POST',
-            postData: options,
+            postData: {keys:options.dbNames},
             statusCodes: {
                 200: 'OK - Request completed successfully',
                 401: 'Unauthorized - CouchDB Server Administrator privileges required',

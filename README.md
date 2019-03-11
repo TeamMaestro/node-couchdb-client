@@ -105,12 +105,12 @@ couchDb.getDatabases()
 ]
 ```
 
-### findDatabaseInfo() [POST \_dbs\_info](http://docs.couchdb.org/en/latest/api/server/common.html#_dbs_info)
-This endpoint gets information about the specified databases.
+### findDatabaseInfo() [POST \_dbs\_info](http://docs.couchdb.org/en/latest/api/server/common.html#dbs-info)
+Returns information of a list of the specified databases in the CouchDB instance. This enables you to request information about multiple databases in a single request, in place of multiple GET /{db} requests. 
 
 **Request Example:**
 ```javascript
-couchDb.getDatabases({keys:['key1','key2']})
+couchDb.findDatabaseInfo({dbNames:['dbName1','dbName2']})
 ```
 
 **Response Example:**
