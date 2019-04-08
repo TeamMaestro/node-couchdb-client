@@ -15,9 +15,22 @@ export class CouchDb {
     constructor(options: CouchDbOptions.Connection = {}) {
         this.host = options.host || 'http://127.0.0.1';
         this.port = options.port || 5984;
-        this.auth = options.auth;
         this.logging = options.logging || false;
         this.defaultDatabase = options.defaultDatabase;
+
+        /**
+         * Need to make copy of options.auth because as of typescript 3
+         * it will not be extensible, and the request library will
+         * try and add a property to the passed in auth object.
+         */
+        if (options.auth) {
+            try {
+                this.auth = JSON.parse(JSON.stringify(options.auth));
+            }
+            catch {
+                console.error('Error configuring Node CouchDB Client auth');
+            }
+        }
     }
 
     /**
